@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Khushi's MCA 2026 Mission Control</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f5f0; /* Warm Sand */
+            color: #334155; /* Slate 700 */
+        }
+
+        /* Chart Container Styles - Strictly following requirements */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        /* Custom Utilities */
+        .card {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-interactive {
+            transition: all 0.2s;
+        }
+        .btn-interactive:active {
+            transform: scale(0.95);
+        }
+
+        .phase-tab.active {
+            background-color: #0f766e; /* Teal 700 */
+            color: white;
+            border-color: #0f766e;
+        }
+    </style>
+    <!-- Chosen Palette: Academic Zen (Warm Beige #f5f5f0 Background, White Cards, Teal #0f766e Primary, Coral #f97316 Secondary) -->
+    <!-- Application Structure Plan: 
+         1. Hero Section: Personal context and goal summary.
+         2. Status Radar: Visualizes the "Early Intermediate" assessment data from the report.
+         3. Strategic Roadmap: A tabbed interface to switch between the 3 roadmap phases (Foundations, DSA, Integration), reducing cognitive load.
+         4. Daily Rhythm: An interactive Doughnut chart representing the daily schedule. Clicking segments updates a text detail view.
+         5. Skill Stacking: A CSS-based Venn representation of the Media+Tech goal. 
+    -->
+    <!-- Visualization & Content Choices:
+         1. Skill Assessment -> Goal: Visualize strengths/weaknesses -> Radar Chart (Chart.js) -> Easy comparison of Logic vs Syntax.
+         2. Daily Schedule -> Goal: Show time allocation -> Doughnut Chart (Chart.js) -> Click interaction to show details for each block.
+         3. Roadmap Phases -> Goal: Sequential planning -> Tabbed Content (Vanilla JS) -> Hides complexity, focuses on current phase.
+         4. Skill Stacking -> Goal: Show intersection of job & study -> CSS Overlapping Circles -> Hover effect to reveal the "Project".
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="antialiased min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-stone-200 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold text-teal-800 tracking-tight">Mission Control</h1>
+                <p class="text-xs text-stone-500 font-medium">TARGET: MCA 2026</p>
+            </div>
+            <div class="hidden md:flex space-x-6 text-sm font-semibold text-stone-600">
+                <a href="#status" class="hover:text-teal-700 transition">Status</a>
+                <a href="#roadmap" class="hover:text-teal-700 transition">Roadmap</a>
+                <a href="#schedule" class="hover:text-teal-700 transition">Daily Rhythm</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-6xl mx-auto px-4 py-8 space-y-12 w-full">
+
+        <!-- Intro Section -->
+        <section class="text-center space-y-4 max-w-3xl mx-auto">
+            <h2 class="text-3xl md:text-4xl font-bold text-stone-800">Khushi's Academic & Career Architect</h2>
+            <p class="text-stone-600 leading-relaxed">
+                Welcome to your personalized dashboard. This interface synthesizes your current programming level, your 6-month strategic roadmap, and your daily execution plan. 
+                Use this tool to track the balance between your <strong>Media Management</strong> job and your <strong>MCA Entrance Prep</strong>.
+            </p>
+        </section>
+
+        <!-- Section 1: Current Assessment (Radar Chart) -->
+        <section id="status" class="grid md:grid-cols-2 gap-8 items-center">
+            <div class="card p-6 md:p-8">
+                <h3 class="text-xl font-bold text-teal-800 mb-2">Current Proficiency Audit</h3>
+                <p class="text-sm text-stone-500 mb-6">
+                    Based on the Python diagnostic task, you are at an <strong>Early Intermediate</strong> level. 
+                    You possess strong logic flow but need to tighten your syntax precision.
+                </p>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center border-b border-stone-100 pb-2">
+                        <span class="font-medium text-stone-700">Logic & Flow</span>
+                        <span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded">STRONG</span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-stone-100 pb-2">
+                        <span class="font-medium text-stone-700">Pythonic Tools</span>
+                        <span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded">GOOD</span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-stone-100 pb-2">
+                        <span class="font-medium text-stone-700">Syntax Precision</span>
+                        <span class="px-2 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded">NEEDS WORK</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="font-medium text-stone-700">C Language & Math</span>
+                        <span class="px-2 py-1 bg-stone-100 text-stone-600 text-xs font-bold rounded">STARTING</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card p-4 flex flex-col items-center justify-center">
+                <div class="chart-container">
+                    <canvas id="skillsRadar"></canvas>
+                </div>
+                <p class="text-xs text-center text-stone-400 mt-2">Visual Estimate of Current Capabilities</p>
+            </div>
+        </section>
+
+        <!-- Section 2: Strategic Roadmap (Tabs) -->
+        <section id="roadmap" class="space-y-6">
+            <div class="flex flex-col md:flex-row justify-between items-end border-b border-stone-200 pb-2">
+                <div>
+                    <h3 class="text-2xl font-bold text-stone-800">Strategic Roadmap: Phase 1-3</h3>
+                    <p class="text-stone-500 text-sm mt-1">Select a phase to view detailed academic and practical goals.</p>
+                </div>
+                <!-- Navigation Tabs -->
+                <div class="flex space-x-2 mt-4 md:mt-0">
+                    <button onclick="switchTab('phase1')" id="tab-phase1" class="phase-tab active px-4 py-2 text-sm font-semibold rounded-t-lg border border-b-0 border-stone-200 bg-white text-stone-500 hover:text-teal-700">Month 1-2: Foundation</button>
+                    <button onclick="switchTab('phase2')" id="tab-phase2" class="phase-tab px-4 py-2 text-sm font-semibold rounded-t-lg border border-b-0 border-transparent hover:bg-white hover:text-teal-700 text-stone-400">Month 3-4: DSA</button>
+                    <button onclick="switchTab('phase3')" id="tab-phase3" class="phase-tab px-4 py-2 text-sm font-semibold rounded-t-lg border border-b-0 border-transparent hover:bg-white hover:text-teal-700 text-stone-400">Month 5-6: Build</button>
+                </div>
+            </div>
+
+            <!-- Content Container -->
+            <div class="card p-6 md:p-8 min-h-[300px]">
+                
+                <!-- Phase 1 Content -->
+                <div id="content-phase1" class="roadmap-content grid md:grid-cols-3 gap-8">
+                    <div class="col-span-1 border-r border-stone-100 pr-4">
+                        <h4 class="text-lg font-bold text-teal-700 mb-3">🐍 Logic (Python)</h4>
+                        <ul class="space-y-3 text-sm text-stone-600">
+                            <li class="flex items-start"><span class="mr-2">🔹</span>String Manipulation (Cleaning hashtags, text analysis)</li>
+                            <li class="flex items-start"><span class="mr-2">🔹</span><strong>Dictionaries:</strong> Essential for analytics (e.g., {'post_id': views})</li>
+                            <li class="bg-teal-50 p-3 rounded border border-teal-100 text-teal-800 mt-2">
+                                <strong>Task:</strong> Build a script to count word frequency in a caption.
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-span-1 border-r border-stone-100 pr-4">
+                        <h4 class="text-lg font-bold text-blue-700 mb-3">💻 Academics (C Lang)</h4>
+                        <ul class="space-y-3 text-sm text-stone-600">
+                            <li class="flex items-start"><span class="mr-2">🔹</span>Data Types & Loops (Deep Dive)</li>
+                            <li class="flex items-start"><span class="mr-2">🔹</span><strong>Pointers:</strong> The hardest part, but critical for NIMCET.</li>
+                        </ul>
+                    </div>
+                    <div class="col-span-1">
+                        <h4 class="text-lg font-bold text-orange-600 mb-3">📐 Math (NIMCET)</h4>
+                        <ul class="space-y-3 text-sm text-stone-600">
+                            <li class="flex items-start"><span class="mr-2">🔹</span>Set Theory</li>
+                            <li class="flex items-start"><span class="mr-2">🔹</span>Probability Basics</li>
+                            <li class="text-xs text-stone-400 italic mt-2">Focus on clear concepts, not just formulas.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Phase 2 Content (Hidden by default) -->
+                <div id="content-phase2" class="roadmap-content hidden grid md:grid-cols-2 gap-8">
+                    <div>
+                        <h4 class="text-xl font-bold text-indigo-700 mb-4">Data Structures & Algorithms</h4>
+                        <p class="text-stone-600 mb-4">Moving from "scripting" to "engineering". Focus on how data is stored in memory.</p>
+                        <div class="space-y-4">
+                            <div class="bg-stone-50 p-4 rounded-lg">
+                                <h5 class="font-bold text-stone-800">Core Concepts</h5>
+                                <div class="flex flex-wrap gap-2 mt-2">
+                                    <span class="px-2 py-1 bg-white border border-stone-200 rounded text-xs text-stone-600">Arrays</span>
+                                    <span class="px-2 py-1 bg-white border border-stone-200 rounded text-xs text-stone-600">Strings</span>
+                                    <span class="px-2 py-1 bg-white border border-stone-200 rounded text-xs text-stone-600">Linked Lists (Theory in C)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col justify-center bg-indigo-50 p-6 rounded-lg border border-indigo-100">
+                        <h4 class="text-lg font-bold text-indigo-800 mb-2">Real World Application</h4>
+                        <p class="text-sm text-indigo-900 mb-4">Apply sorting algorithms to your media job:</p>
+                        <div class="bg-white p-4 rounded shadow-sm">
+                            <code class="text-xs text-indigo-600">
+                                def sort_influencers(list):<br>
+                                &nbsp;&nbsp;# Sort by engagement rate<br>
+                                &nbsp;&nbsp;return sorted_list
+                            </code>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phase 3 Content (Hidden by default) -->
+                <div id="content-phase3" class="roadmap-content hidden">
+                    <div class="bg-gradient-to-r from-teal-50 to-white p-6 rounded-xl border border-teal-100 text-center">
+                        <h4 class="text-2xl font-bold text-teal-800 mb-2">The Capstone: Insta-Analyzer Tool</h4>
+                        <p class="text-stone-600 max-w-2xl mx-auto mb-6">
+                            Merge your Python skills with your Media expertise. Build a tool that provides value to your job and proves your coding ability.
+                        </p>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-left max-w-4xl mx-auto">
+                            <div class="bg-white p-4 rounded shadow-sm border-t-4 border-teal-500">
+                                <div class="font-bold text-stone-800 mb-1">Input</div>
+                                <div class="text-sm text-stone-500">Text file with raw caption data.</div>
+                            </div>
+                            <div class="bg-white p-4 rounded shadow-sm border-t-4 border-teal-500">
+                                <div class="font-bold text-stone-800 mb-1">Processing</div>
+                                <div class="text-sm text-stone-500">Python script calculates avg length, keyword frequency.</div>
+                            </div>
+                            <div class="bg-white p-4 rounded shadow-sm border-t-4 border-teal-500">
+                                <div class="font-bold text-stone-800 mb-1">Output</div>
+                                <div class="text-sm text-stone-500">Report on most effective hashtags and words.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Section 3: Daily Rhythm (Interactive Doughnut) -->
+        <section id="schedule" class="grid md:grid-cols-12 gap-8">
+            <div class="md:col-span-5 flex flex-col justify-center">
+                <h3 class="text-2xl font-bold text-stone-800 mb-4">Daily Execution Rhythm</h3>
+                <p class="text-stone-600 mb-6">
+                    Consistency beats intensity. This interactive clock visualizes your ideal day. 
+                    <span class="text-teal-600 font-bold">Click a segment</span> to see the focus for that time block.
+                </p>
+                <div class="bg-white p-6 rounded-xl border border-stone-200 shadow-sm transition-all duration-300" id="schedule-detail-card">
+                    <h4 class="text-lg font-bold text-teal-800" id="detail-title">Select a Time Block</h4>
+                    <p class="text-sm text-stone-500 mt-2" id="detail-desc">
+                        Interact with the chart to see specific tasks and focus areas for Morning, Day, Evening, or Night.
+                    </p>
+                    <div class="mt-4 pt-4 border-t border-stone-100">
+                        <span class="text-xs font-bold text-stone-400 uppercase tracking-wider">Key Rule</span>
+                        <p class="text-sm font-medium text-stone-700 mt-1" id="detail-rule">--</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="md:col-span-7 flex justify-center items-center bg-white rounded-xl p-4 shadow-sm border border-stone-100">
+                <div class="chart-container">
+                    <canvas id="scheduleChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Skill Stacking (Visual Concept) -->
+        <section class="bg-stone-800 text-stone-200 rounded-2xl p-8 md:p-12 text-center overflow-hidden relative">
+            <div class="relative z-10">
+                <h3 class="text-2xl font-bold text-white mb-2">The "Skill Stack" Strategy</h3>
+                <p class="text-stone-400 mb-8 max-w-2xl mx-auto">
+                    You are not just a student or just an employee. Your power lies in the intersection.
+                    Hover over the overlap below to see your competitive advantage.
+                </p>
+                
+                <div class="flex justify-center items-center h-64 relative mt-8 select-none">
+                    <!-- Circle 1 -->
+                    <div class="w-48 h-48 rounded-full bg-teal-600/80 absolute left-1/2 transform -translate-x-32 flex items-center justify-center backdrop-blur-sm border border-teal-400">
+                        <span class="font-bold text-white text-lg">Media<br>Management</span>
+                    </div>
+                    <!-- Circle 2 -->
+                    <div class="w-48 h-48 rounded-full bg-orange-500/80 absolute left-1/2 transform translate-x-[-4rem] flex items-center justify-center backdrop-blur-sm border border-orange-400">
+                        <span class="font-bold text-white text-lg">Tech &<br>Logic</span>
+                    </div>
+                    <!-- Intersection Trigger -->
+                    <div class="w-24 h-48 absolute left-1/2 transform -translate-x-12 z-20 cursor-pointer group flex items-center justify-center">
+                        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white text-stone-800 p-4 rounded-lg shadow-xl absolute -top-16 w-64 text-center pointer-events-none">
+                            <h5 class="font-bold text-teal-700">The Sweet Spot</h5>
+                            <p class="text-xs mt-1">Data-Driven Content Strategy. Automation of Analytics. Unique Portfolio Projects.</p>
+                        </div>
+                        <span class="text-white font-black text-2xl drop-shadow-md">+</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white border-t border-stone-200 mt-12 py-8">
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <p class="text-stone-400 text-sm">Generated for Khushi | MCA 2026 Roadmap</p>
+        </div>
+    </footer>
+
+    <script>
+        // --- Data & Logic ---
+
+        // 1. Radar Chart Data (Status)
+        const radarData = {
+            labels: ['Logic Flow', 'Python Syntax', 'Math (NIMCET)', 'C Language', 'Data Structures'],
+            datasets: [{
+                label: 'Current Level',
+                data: [70, 45, 30, 15, 10], // Estimated based on "Early Intermediate" report
+                fill: true,
+                backgroundColor: 'rgba(15, 118, 110, 0.2)', // Teal 700 low opacity
+                borderColor: 'rgb(15, 118, 110)',
+                pointBackgroundColor: 'rgb(15, 118, 110)',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: 'rgb(15, 118, 110)'
+            }]
+        };
+
+        // 2. Schedule Data (Doughnut)
+        const scheduleDataDetails = {
+            'Morning': {
+                title: 'Morning: Hard Code & Math',
+                desc: '1 Hour of intense focus on C Language (Pointers/Loops) or NIMCET Math (Set Theory). Do this while your brain is fresh.',
+                rule: 'No social media before this block is done.'
+            },
+            'Day': {
+                title: 'Day: Media Work',
+                desc: 'Apply your logical thinking to your job. Look for patterns in engagement data. Manage content calendars.',
+                rule: 'Focus on efficiency and spotting data trends.'
+            },
+            'Evening': {
+                title: 'Evening: Python Practice',
+                desc: '30 Minutes. Write one small script related to something you did at work today (e.g., text processing).',
+                rule: 'Keep it practical. Don\'t overcomplicate.'
+            },
+            'Night': {
+                title: 'Night: Review',
+                desc: '30 Minutes. Review what you learned. Plan the exact task for tomorrow morning.',
+                rule: 'No screens after this block.'
+            }
+        };
+
+        const scheduleChartData = {
+            labels: ['Morning (Study)', 'Day (Job)', 'Evening (Code)', 'Night (Review)'],
+            datasets: [{
+                data: [15, 60, 10, 15], // Rough percentage of active day
+                backgroundColor: [
+                    '#0f766e', // Teal (Study)
+                    '#fb923c', // Orange (Job)
+                    '#334155', // Slate (Code)
+                    '#94a3b8'  // Gray (Review)
+                ],
+                borderWidth: 0,
+                hoverOffset: 10
+            }]
+        };
+
+        // --- Initialization ---
+
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            // Render Radar Chart
+            const ctxRadar = document.getElementById('skillsRadar').getContext('2d');
+            new Chart(ctxRadar, {
+                type: 'radar',
+                data: radarData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: '#e5e7eb' },
+                            grid: { color: '#e5e7eb' },
+                            pointLabels: {
+                                font: { size: 12, family: 'Inter' },
+                                color: '#4b5563'
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 100
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+
+            // Render Schedule Chart
+            const ctxSchedule = document.getElementById('scheduleChart').getContext('2d');
+            const scheduleChart = new Chart(ctxSchedule, {
+                type: 'doughnut',
+                data: scheduleChartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: { enabled: false } // We use custom click handler
+                    },
+                    cutout: '60%',
+                    onClick: (e, activeElements) => {
+                        if (activeElements.length > 0) {
+                            const index = activeElements[0].index;
+                            const label = scheduleChartData.labels[index];
+                            // Extract key from label (e.g. "Morning (Study)" -> "Morning")
+                            const key = label.split(' ')[0]; 
+                            updateScheduleDetail(key);
+                        }
+                    }
+                }
+            });
+
+            // Set default schedule view
+            updateScheduleDetail('Morning');
+        });
+
+        // --- Interaction Functions ---
+
+        function switchTab(phaseId) {
+            // 1. Reset all tabs
+            document.querySelectorAll('.phase-tab').forEach(t => {
+                t.classList.remove('active', 'bg-white', 'text-stone-500', 'border-stone-200');
+                t.classList.add('text-stone-400', 'border-transparent'); // Inactive state
+            });
+            
+            // 2. Hide all content
+            document.querySelectorAll('.roadmap-content').forEach(c => c.classList.add('hidden'));
+
+            // 3. Activate selected tab
+            const activeTab = document.getElementById('tab-' + phaseId);
+            activeTab.classList.add('active', 'text-stone-500'); 
+            activeTab.classList.remove('text-stone-400', 'border-transparent');
+            
+            // 4. Show content
+            const activeContent = document.getElementById('content-' + phaseId);
+            activeContent.classList.remove('hidden');
+            
+            // Add fade-in animation
+            activeContent.animate([
+                { opacity: 0, transform: 'translateY(10px)' },
+                { opacity: 1, transform: 'translateY(0)' }
+            ], {
+                duration: 300,
+                easing: 'ease-out'
+            });
+        }
+
+        function updateScheduleDetail(key) {
+            const data = scheduleDataDetails[key];
+            if (!data) return;
+
+            const titleEl = document.getElementById('detail-title');
+            const descEl = document.getElementById('detail-desc');
+            const ruleEl = document.getElementById('detail-rule');
+            const cardEl = document.getElementById('schedule-detail-card');
+
+            // Animate out
+            cardEl.style.opacity = '0.7';
+            cardEl.style.transform = 'scale(0.98)';
+
+            setTimeout(() => {
+                titleEl.textContent = data.title;
+                descEl.textContent = data.desc;
+                ruleEl.textContent = data.rule;
+                
+                // Animate in
+                cardEl.style.opacity = '1';
+                cardEl.style.transform = 'scale(1)';
+            }, 150);
+        }
+
+    </script>
+</body>
+</html>
